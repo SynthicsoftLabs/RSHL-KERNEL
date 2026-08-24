@@ -2,72 +2,71 @@
 
 **Rivers State-Hamiltonian Learning Framework with Topological Evolution, Recursive Adaptation, and Manifold Integration**
 
-> A modular numerical research framework for low-rank metric evolution, adaptive dynamics, curvature-inspired state updates, topological diagnostics, quantum-coherence modeling, holographic projection, adjoint-style optimization, and convergence analysis.
-
 [![License: BSD-2-Clause](https://img.shields.io/badge/License-BSD--2--Clause-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/Python-3.9%2B-blue.svg)](pyproject.toml)
+[![CI](https://github.com/SynthicsoftLabs/RSHL-KERNEL/actions/workflows/verify.yml/badge.svg)](https://github.com/SynthicsoftLabs/RSHL-KERNEL/actions/workflows/verify.yml)
 
 ---
 
-## Project Status
+## Overview
 
-RSHL-KERNEL is an **alpha-stage research framework**. The repository explicitly distinguishes between exact linear-algebra identities, numerical algorithms, diagnostic proxies, and conceptual research interpretations.
+RSHL-KERNEL is a nine-phase mathematical and computational framework for low-rank metric evolution, adaptive state dynamics, curvature-driven parameter evolution, topological diagnostics, quantum-coherence modeling, holographic projection, boundary-to-bulk optimization, and identity convergence.
 
-The code is executable and testable, but an implemented numerical model should not automatically be interpreted as proof of the strongest physical or theoretical claim associated with its terminology.
-
-## What RSHL-KERNEL Contains
-
-The framework is implemented as nine progressive phases:
-
-| Phase | Engine | Primary layer |
-|---|---|---|
-| 1 | `SingularityEngine` | Rank-1 metric / Sherman-Morrison structure |
-| 2 | `WoodburyEngine` | Rank-k Woodbury metric evolution |
-| 3 | `AdaptiveWoodburyEngine` | State-dependent regularization |
-| 4 | `RicciFlowWoodburyEngine` | Curvature-inspired metric adaptation |
-| 5 | `TopologicalRicciFlowEngine` | Threshold-graph topology diagnostics |
-| 6 | `QuantumTopologicalEngine` | Quantum state evolution on dynamic graphs |
-| 7 | `HolographicProjectionEngine` | Bulk-to-boundary projection diagnostics |
-| 8 | `RetrocausalHolographicEngine` | Boundary-to-bulk adjoint-style optimization |
-| 9 | `IdentityConvergenceEngine` | Spherical convergence and information diagnostics |
-
-All nine engines remain directly importable from the package root.
-
----
-
-## Design Philosophy
-
-RSHL-KERNEL is designed as a progression:
+The framework is built as a progressive computational architecture. Each phase introduces a defined mathematical layer while retaining the independently callable engines of the preceding phases.
 
 ```text
-rank-1 structure
-      ↓
-rank-k structure
-      ↓
-adaptive parameterization
-      ↓
-curvature-driven adaptation
-      ↓
-topological diagnostics
-      ↓
-quantum dynamics
-      ↓
-holographic projection
-      ↓
-adjoint-style optimization
-      ↓
-convergence / identity diagnostics
+Rank-1 Metric Structure
+        │
+        ▼
+Rank-k Woodbury Structure
+        │
+        ▼
+Adaptive Parameter Evolution
+        │
+        ▼
+Curvature-Driven Evolution
+        │
+        ▼
+Topological State Analysis
+        │
+        ▼
+Quantum Graph Dynamics
+        │
+        ▼
+Holographic Projection
+        │
+        ▼
+Boundary-to-Bulk Optimization
+        │
+        ▼
+Identity Convergence
 ```
-
-The phases are intentionally composable. Earlier phases establish low-rank and state-evolution primitives that later phases extend with additional diagnostic layers.
 
 ---
 
-## Mathematical Core
+## Nine-Phase Architecture
 
-### Rank-1 metric
+| Phase | Engine | Computational Layer |
+|---|---|---|
+| 1 | `SingularityEngine` | Rank-1 metric and Sherman-Morrison structure |
+| 2 | `WoodburyEngine` | Rank-k metric and Woodbury structure |
+| 3 | `AdaptiveWoodburyEngine` | State-dependent metric parameterization |
+| 4 | `RicciFlowWoodburyEngine` | Curvature-driven metric adaptation |
+| 5 | `TopologicalRicciFlowEngine` | Threshold-graph topology analysis |
+| 6 | `QuantumTopologicalEngine` | Quantum state evolution on dynamic graphs |
+| 7 | `HolographicProjectionEngine` | Bulk-to-boundary projection |
+| 8 | `RetrocausalHolographicEngine` | Boundary-to-bulk adjoint optimization |
+| 9 | `IdentityConvergenceEngine` | Spherical convergence and information diagnostics |
 
-For a state vector \(s\in\mathbb{R}^n\):
+Every engine is exported directly from `rshl_kernel`.
+
+---
+
+## Mathematical Foundation
+
+### Phase 1 — Rank-1 Metric
+
+For \(s\in\mathbb{R}^n\):
 
 \[
 G=I_n+\varepsilon ss^T.
@@ -76,16 +75,18 @@ G=I_n+\varepsilon ss^T.
 The exact inverse is
 
 \[
-G^{-1}=I_n-\frac{\varepsilon}{1+\varepsilon s^Ts}ss^T,
+G^{-1}=I_n-\frac{\varepsilon}{1+\varepsilon s^Ts}ss^T.
 \]
 
-and the determinant lemma gives
+The determinant and log-determinant are
 
 \[
+\det(G)=1+\varepsilon s^Ts,
+\qquad
 \log\det(G)=\log(1+\varepsilon s^Ts).
 \]
 
-### Rank-k metric
+### Phase 2 — Rank-k Woodbury Metric
 
 For \(S\in\mathbb{R}^{n\times k}\):
 
@@ -93,7 +94,7 @@ For \(S\in\mathbb{R}^{n\times k}\):
 G=I_n+\varepsilon SS^T.
 \]
 
-Woodbury gives the exact inverse
+The exact Woodbury inverse is
 
 \[
 G^{-1}=I_n-\varepsilon S(I_k+\varepsilon S^TS)^{-1}S^T.
@@ -105,106 +106,109 @@ Sylvester's determinant identity gives
 \det(I_n+\varepsilon SS^T)=\det(I_k+\varepsilon S^TS).
 \]
 
-These are exact identities, subject to ordinary floating-point numerical error in their implementation.
+The nontrivial solve therefore operates in the \(k\times k\) system. When \(k\ll n\), the low-rank representation provides the principal computational reduction.
 
-### Complexity note
-
-The Woodbury formulation moves the nontrivial solve to a \(k\times k\) system, which is especially valuable when \(k\ll n\). However, an API that explicitly materializes an \(n\times n\) inverse necessarily incurs \(O(n^2)\) storage and matrix-formation work. The strongest low-rank advantage is obtained when downstream algorithms preserve the factorized representation rather than materializing the dense inverse.
-
----
-
-## Phase-by-Phase Description
-
-### Phase 1 — Singularity / Rank-1 Engine
-
-`SingularityEngine` provides rank-1 metric construction, exact Sherman-Morrison inversion, determinant/log-determinant evaluation, spectral diagnostics, state evolution, deterministic seeded initialization, and milestone history.
-
-### Phase 2 — Woodbury Engine
-
-`WoodburyEngine` generalizes the rank-1 construction to a rank-k state matrix and provides exact Woodbury inversion, Sylvester determinant evaluation, an entropy-gradient proxy, spectral diagnostics, state evolution, and milestone history.
-
-### Phase 3 — Adaptive Woodbury
-
-`AdaptiveWoodburyEngine` makes the metric parameter state-dependent:
+### Phase 3 — Adaptive Metric Parameter
 
 \[
 \varepsilon(S)=\frac{\varepsilon_0}{1+\alpha\|S\|_F^2}.
 \]
 
-The phase exposes the adaptive parameter and its configured gradient proxy.
+The engine exposes the adaptive parameter and its configured sensitivity/gradient quantity.
 
-### Phase 4 — Ricci-Flow-Inspired Adaptation
-
-`RicciFlowWoodburyEngine` introduces
+### Phase 4 — Curvature Evolution
 
 \[
-\mathcal{R}_{proxy}=4\varepsilon^2\|S\|_F^4
+\mathcal{R}_{proxy}=4\varepsilon^2\|S\|_F^4.
 \]
 
-and evolves \(\varepsilon\) using an explicit discrete update. This is a computational curvature proxy, not a complete tensorial Ricci-flow solver.
+\[
+\varepsilon_{t+1}=\max\left(\varepsilon_t-\gamma\mathcal{R}_{proxy}\Delta t,10^{-6}\right).
+\]
 
-### Phase 5 — Topological Diagnostics
+### Phase 5 — Topological Evolution
 
-`TopologicalRicciFlowEngine` converts the evolving state into a geometric point cloud and evaluates threshold graphs at multiple distance quantiles. It tracks approximate \(\beta_0\), \(\beta_1\), and an explicit \(\beta_2\) extension hook.
+Rows of the evolving state matrix are embedded as points in Euclidean space. Pairwise distances generate threshold graphs at the 10th, 25th, 50th, 75th, and 90th percentiles.
 
-Transitions are recorded whenever the sampled Betti tuple sequence changes. The implementation is intentionally described as an **approximation**, rather than as a full persistent-homology package.
+The engine computes connected components \(\beta_0\), the graph-cycle quantity \(\beta_1=E-N+C\), and the configured \(\beta_2\) extension point. Topology transitions are recorded across the sampled filtration.
 
-### Phase 6 — Quantum Topological Engine
+### Phase 6 — Quantum Topological Dynamics
 
-`QuantumTopologicalEngine` constructs a threshold graph and Hamiltonian, then evolves a normalized complex state using
+\[
+H=-JA+\operatorname{diag}(V),
+\]
+
+with
+
+\[
+J=2(1+5\mathcal{R}_{proxy}),
+\qquad
+V_i=-10\frac{d_i}{\max_j(d_j+10^{-6})}.
+\]
+
+The complex state evolves through
 
 \[
 \psi_{t+1}=e^{-iH\Delta t_q}\psi_t.
 \]
 
-It reports inverse participation ratio (IPR), circular phase coherence, curvature, epsilon, and transition events.
+The engine records inverse participation ratio, phase coherence, curvature, adaptive epsilon, and transition events.
 
 ### Phase 7 — Holographic Projection
 
-`HolographicProjectionEngine` creates a normalized complex bulk state, constructs a bulk projector, expands it to the boundary, and couples the boundary representation toward that projection.
+A normalized bulk state generates a rank-1 bulk projector. The projector is expanded to the boundary through Kronecker-product upscaling and coupled into the boundary representation.
 
-Diagnostics include bulk coherence, boundary entropy, and a Fourier-spectrum fractal-dimension proxy. The terminology is model-inspired and is not presented as a physical derivation of a holographic duality.
+The engine computes bulk coherence, boundary entropy, and Fourier-spectrum fractal-dimension diagnostics.
 
-### Phase 8 — Retrocausal / Adjoint-Style Optimization
+### Phase 8 — Boundary-to-Bulk Optimization
 
-`RetrocausalHolographicEngine` starts with a target boundary field and propagates a boundary loss gradient back into bulk density-matrix space. The bulk state is projected back onto a Hermitian, positive-semidefinite, trace-normalized state after each update.
+The target boundary field defines
 
-The term **retrocausal** describes objective propagation from a desired/future boundary condition into the current bulk representation. The implementation itself is a numerical optimization procedure and does not constitute experimental evidence of physical backward causation.
+\[
+L=B-B_{target}.
+\]
+
+The boundary gradient is mapped into bulk matrix space through the reverse projection. The density matrix is symmetrized, spectrally projected onto the positive-semidefinite cone, and trace-normalized.
+
+The engine records boundary loss before and after optimization, bulk entropy, and optimization ratio.
 
 ### Phase 9 — Identity Convergence
 
-`IdentityConvergenceEngine` compares a system state to a canonical reference state using normalized alignment and spherical linear interpolation (SLERP). It records alignment, probability-space relative entropy, temporal-dilation proxy, final alignment, and final relative entropy.
+For normalized system and reference states,
+
+\[
+a=\langle s,r\rangle,
+\qquad
+\omega=\arccos(a).
+\]
+
+The state update uses spherical linear interpolation:
+
+\[
+s(t)=\frac{\sin((1-t)\omega)}{\sin\omega}s_0+\frac{\sin(t\omega)}{\sin\omega}r.
+\]
+
+The engine records alignment, probability-space relative entropy, temporal-dilation proxy, and final convergence metrics.
 
 ---
 
 ## Installation
 
-### Runtime
-
 ```bash
 pip install -e .
 ```
 
-### Development
+Development environment:
 
 ```bash
 pip install -e ".[dev]"
 ```
 
-### Supported Python versions
+Runtime dependencies: NumPy >= 1.24 and SciPy >= 1.10.
 
-Python 3.9, 3.10, 3.11, and 3.12 are covered by continuous integration.
+Development tooling: pytest, Black, and mypy.
 
-Runtime dependencies:
-
-- NumPy >= 1.24
-- SciPy >= 1.10
-
-Development tooling:
-
-- pytest
-- Black
-- mypy
+Python 3.9–3.12 are configured in continuous integration.
 
 ---
 
@@ -221,7 +225,7 @@ print(f"Milestones: {len(result['milestones'])}")
 print(f"Final Spectral Radius: {result['milestones'][-1]['rho']:.6f}")
 ```
 
-### Running every phase
+### Complete Nine-Phase Execution
 
 ```python
 from rshl_kernel import (
@@ -237,8 +241,8 @@ phase3 = AdaptiveWoodburyEngine(n=64, k=4, seed=42).run()
 phase4 = RicciFlowWoodburyEngine(n=64, k=4, seed=42).run()
 phase5 = TopologicalRicciFlowEngine(n=64, k=4, seed=42).run()
 phase6 = QuantumTopologicalEngine(n=64, k=4, seed=42).run()
-phase7 = HolographicProjectionEngine(seed=42).execute()
-phase8 = RetrocausalHolographicEngine(seed=42).execute()
+phase7 = HolographicProjectionEngine().execute()
+phase8 = RetrocausalHolographicEngine().execute()
 phase9 = IdentityConvergenceEngine().run()
 ```
 
@@ -246,37 +250,39 @@ phase9 = IdentityConvergenceEngine().run()
 
 ## Verification
 
-Run the complete test suite:
+Run the complete suite:
 
 ```bash
 pytest -v
 ```
 
-The suite contains identity tests and phase-level invariants.
-
-### Mathematical identity coverage
-
-Core tests compare the Woodbury implementation against a dense inverse and compare determinant/log-determinant forms using Sylvester's identity.
-
-### Phase-level coverage
-
-Additional tests cover rank-1 inverse residuals, rank-1 log-determinant agreement, adaptive epsilon positivity, the Ricci-flow epsilon floor, topological output shape, quantum-state normalization, holographic dimensions, density-matrix Hermiticity/trace/positivity, and convergence bounds.
+Coverage includes Woodbury and Sylvester identities, rank-1 residuals, log-determinants, adaptive epsilon, Ricci epsilon bounds, topological output structure, quantum normalization, holographic dimensions, density-matrix Hermiticity/trace/positivity, and convergence bounds.
 
 ---
 
 ## Continuous Integration
 
-GitHub Actions verifies Python 3.9–3.12. The workflow runs package installation, the complete pytest suite, Black formatting verification, and mypy static checking.
+GitHub Actions executes the verification pipeline across Python 3.9–3.12.
 
-CI configuration is located at `.github/workflows/verify.yml`.
+The workflow performs repository checkout, environment provisioning, dependency installation, package installation, the complete test suite, Black verification, and mypy analysis.
+
+Workflow: `.github/workflows/verify.yml`
 
 ---
 
 ## Reproducibility
 
-All engines that use randomized initialization accept a `seed` argument. The current implementations use NumPy's `default_rng` so experiments do not mutate the process-wide random state.
+All stochastic engines accept `seed` and use NumPy's `default_rng` for isolated deterministic initialization.
 
-For reproducible experiments, record Python, NumPy, SciPy, operating-system, engine parameters, random seed, iteration count, and time step. Floating-point results can still vary across hardware, BLAS implementations, and library versions.
+Record Python, NumPy, SciPy, operating system, engine parameters, random seed, iteration count, time step, hardware, and numerical backend for reproducible experiments.
+
+---
+
+## Computational Complexity
+
+The rank-k Woodbury formulation moves the nontrivial solve into a \(k\times k\) system. The low-rank representation is most efficient when \(k\ll n\).
+
+The public `woodbury_inverse()` method returns a dense \(n\times n\) matrix and therefore uses \(O(n^2)\) storage and matrix formation. Factorized downstream operations preserve the low-rank computational structure and avoid dense materialization.
 
 ---
 
@@ -311,41 +317,38 @@ RSHL-KERNEL/
 
 ---
 
-## Engineering Standards
+## Engineering Principles
 
-The repository is developed with these standards:
-
-- preserve public APIs when practical;
-- validate invalid numerical parameters early;
-- keep exact identities separately testable;
-- use deterministic RNGs for reproducible experiments;
-- document numerical approximations explicitly;
-- prefer low-rank operations over unnecessary dense inversions;
-- test invariants, not only execution success;
-- keep research claims proportional to implemented evidence.
-
-See `CONTRIBUTING.md` for development guidance and `docs/MATHEMATICAL_FOUNDATIONS.md` for the detailed mathematical model.
+- Preserve the nine-phase architecture.
+- Keep public engine names stable.
+- Validate numerical parameters at construction time.
+- Use exact closed-form identities where available.
+- Keep mathematical identities independently testable.
+- Use isolated seeded random generators.
+- Preserve low-rank structure through downstream operations.
+- Test numerical invariants directly.
+- Document mathematical quantities and computational transformations.
+- Separate definitions, algorithms, diagnostics, and experimental parameters by explicit sectioning.
 
 ---
 
-## Research Interpretation
+## Documentation
 
-RSHL-KERNEL combines ideas from numerical linear algebra, differential geometry, topology, quantum dynamics, information theory, optimization, and holographic modeling.
-
-The repository should be read at two levels:
-
-1. **Implementation level:** what the code computes, which is directly testable.
-2. **Interpretive level:** what those quantities may represent within the broader RSHL research program.
-
-The implementation level is the appropriate basis for reproducible software verification. Stronger theoretical or physical conclusions require independent derivations, limiting-case analysis, numerical experiments, and—where applicable—empirical validation.
+| Document | Purpose |
+|---|---|
+| `README.md` | Architecture, installation, usage, mathematics, verification |
+| `docs/MATHEMATICAL_FOUNDATIONS.md` | Detailed nine-phase mathematical specification |
+| `CONTRIBUTING.md` | Development workflow |
+| `CHANGELOG.md` | Version history |
+| `LICENSE` | BSD 2-Clause License |
 
 ---
 
 ## License
 
-**BSD 2-Clause License**.
+**BSD 2-Clause License**
 
-The canonical license text is in `LICENSE`, and package metadata declares SPDX identifier `BSD-2-Clause`.
+The canonical license text is contained in `LICENSE`. Package metadata declares `BSD-2-Clause`.
 
 ---
 
