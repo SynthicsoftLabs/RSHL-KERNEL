@@ -1,9 +1,9 @@
 """Phase 5: topological diagnostics on the evolving low-rank state.
 
 The implementation uses distance-threshold graph filtrations and lightweight
-Betti-number proxies.  It is intentionally an approximation rather than a
-claim of full persistent-homology computation; the API preserves the original
-transition-detection workflow.
+Betti-number estimators. It preserves the original connected-component,
+loop, and tetrahedra-based void estimators while clearly identifying them as
+approximations rather than a general-purpose persistent-homology solver.
 """
 
 import time
@@ -30,19 +30,23 @@ class TopologicalRicciFlowEngine:
         self.S = self.rng.standard_normal((self.n, self.k)) * 0.5
 
     def compute_curvature_proxy(self):
+        """Return the scalar curvature proxy used by this phase."""
         s_norm_sq = float(np.linalg.norm(self.S) ** 2)
         return 4.0 * self.eps**2 * s_norm_sq**2
 
     def ricci_adaptation_step(self):
+        """Apply the configured explicit curvature-driven epsilon update."""
         curvature = self.compute_curvature_proxy()
         self.eps = max(self.eps - self.gamma * curvature * self.dt, 1e-6)
 
     def woodbury_inverse(self):
+        """Return the exact low-rank inverse of the current metric."""
         inner = np.eye(self.k) + self.eps * self.S.T @ self.S
         return np.eye(self.n) - self.eps * self.S @ np.linalg.solve(inner, self.S.T)
 
     @staticmethod
     def _count_connected_components(adjacency):
+        """Count connected components with breadth-first graph traversal."""
         n = adjacency.shape[0]
         visited = np.zeros(n, dtype=bool)
         components = 0
@@ -60,6 +64,7 @@ class TopologicalRicciFlowEngine:
         return components
 
     def _estimate_loops(self, adjacency):
+        """Estimate beta_1 using the graph-cycle Euler characteristic proxy."""
         n = adjacency.shape[0]
         edges = int(np.sum(adjacency) // 2)
         components = self._count_connected_components(adjacency)
@@ -67,14 +72,33 @@ class TopologicalRicciFlowEngine:
 
     @staticmethod
     def _estimate_voids(adjacency, points, threshold):
-        # Kept as an explicit API hook for higher-order complex estimators.
-        # The current lightweight approximation reports no beta_2 features.
-        del adjacency, points, threshold
-        return 0
+        """Estimate beta_2 from sampled 4-cliques as a lightweight void proxy.
+
+        This retains the original tetrahedra-counting model. It is a heuristic
+        estimator and should not be confused with exact homology of a Vietoris-
+        Rips or Cech complex.
+        """
+        del points, threshold
+        n = adjacency.shape[0]
+        tetrahedra_count = 0
+        for i in range(n):
+            neighbors_i = np.where(adjacency[i] == 1)[0]
+            for j in neighbors_i:
+                if j <= i:
+                    continue
+                neighbors_j = np.where(adjacency[j] == 1)[0]
+                common = np.intersect1d(neighbors_i, neighbors_j)
+                for k in common:
+                    if k <= j:
+                        continue
+                    neighbors_k = np.where(adjacency[k] == 1)[0]
+                    common_k = np.intersect1d(common, neighbors_k)
+                    tetrahedra_count += len([node for node in common_k if node > k])
+        return max(0, tetrahedra_count // 10)
 
     def compute_persistent_homology_approx(self):
-        """Return approximate Betti tuples over five distance thresholds."""
-        distances = squareform(pdist(self.S))
+        """Return approximate Betti tuples at five distance thresholds."""
+        distances = squareform(pdist(self.S, metric="euclidean"))
         nonzero = distances[distances > 0]
         if nonzero.size == 0:
             return [(self.n, 0, 0)] * 5
@@ -90,6 +114,7 @@ class TopologicalRicciFlowEngine:
 
     @staticmethod
     def detect_topological_transition(current_betti, prev_betti):
+        """Return whether the sampled Betti signature has changed."""
         return prev_betti is not None and current_betti != prev_betti
 
     @staticmethod
