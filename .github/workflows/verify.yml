@@ -1,32 +1,45 @@
-name: RSHL-KERNEL Mathematical Verification
+name: RSHL-KERNEL Verification
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: ["main", "master"]
+
+permissions:
+  contents: read
 
 jobs:
-  verify-identities:
+  verify:
+    name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12"]
+
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -e .
-    - name: Run Mathematical Identity Tests
-      run: pytest tests/test_identities.py -v
-    - name: Type Checking (Optional but Recommended)
-      run: |
-        pip install mypy
-        mypy rshl_kernel/ --ignore-missing-imports
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install Package and Development Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run Complete Test Suite
+        run: pytest -v
+
+      - name: Verify Formatting
+        if: matrix.python-version == '3.12'
+        run: black --check rshl_kernel tests
+
+      - name: Static Type Checking
+        if: matrix.python-version == '3.12'
+        run: mypy rshl_kernel/ --ignore-missing-imports
