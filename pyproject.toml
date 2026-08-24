@@ -12,10 +12,39 @@ license = {text = "BSD-2-Clause"}
 authors = [
     {name = "Synthicsoft Labs", email = "contact@synthicsoft.com"}
 ]
+keywords = [
+    "rshl",
+    "mathematical-framework",
+    "woodbury",
+    "ricci-flow",
+    "topology",
+    "quantum-coherence",
+    "holography",
+    "optimization",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
 dependencies = [
     "numpy>=1.24.0",
     "scipy>=1.10.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/SynthicsoftLabs/RSHL-KERNEL"
+Repository = "https://github.com/SynthicsoftLabs/RSHL-KERNEL"
+Issues = "https://github.com/SynthicsoftLabs/RSHL-KERNEL/issues"
 
 [project.optional-dependencies]
 dev = [
@@ -27,3 +56,17 @@ dev = [
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["rshl_kernel*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.mypy]
+python_version = "3.9"
+ignore_missing_imports = true
+check_untyped_defs = true
+warn_unused_ignores = true
