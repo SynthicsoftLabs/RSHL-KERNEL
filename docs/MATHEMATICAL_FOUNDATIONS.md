@@ -1,44 +1,60 @@
 # RSHL-KERNEL Mathematical Foundations
 
-## Purpose
+## 1. Framework Structure
 
-RSHL-KERNEL is organized as a progressive nine-phase numerical framework. Each phase builds a computational layer on the state representation established by earlier phases while retaining independently callable engines.
+RSHL-KERNEL defines a progressive nine-phase computational system. Each phase extends the state representation and diagnostics established by preceding phases while retaining an independently callable engine.
 
-The repository contains both exact linear-algebra identities and deliberately approximate diagnostic models. Exact identities should be distinguished from modeling choices, numerical proxies, and research hypotheses.
+The mathematical layers are:
 
-## Phase 1 — Rank-1 Metric
+1. Rank-1 metric structure
+2. Rank-k Woodbury structure
+3. Adaptive metric parameterization
+4. Curvature-driven parameter evolution
+5. Topological state analysis
+6. Quantum graph dynamics
+7. Holographic bulk-to-boundary projection
+8. Boundary-to-bulk optimization
+9. Identity convergence
 
-The canonical metric is
+The implementation presents equations, algorithms, diagnostics, and experimental parameters as explicit phase definitions.
+
+## 2. Phase 1 — Rank-1 Metric
+
+The metric is
 
 \[
-G = I_n + \varepsilon ss^T.
+G=I_n+\varepsilon ss^T.
 \]
 
-For a scalar rank-1 update, Sherman-Morrison gives
+Sherman-Morrison gives
 
 \[
-G^{-1} = I_n - \frac{\varepsilon}{1+\varepsilon s^Ts}ss^T.
+G^{-1}=I_n-\frac{\varepsilon}{1+\varepsilon s^Ts}ss^T.
 \]
 
 The matrix determinant lemma gives
 
 \[
 \det(G)=1+\varepsilon s^Ts,
-\qquad
+\]
+
+and
+
+\[
 \log\det(G)=\log(1+\varepsilon s^Ts).
 \]
 
-The implementation uses these closed forms rather than a dense matrix inverse.
+The implementation evaluates these closed forms directly.
 
-## Phase 2 — Rank-k Woodbury Metric
+## 3. Phase 2 — Rank-k Woodbury Metric
 
-Let \(S\in\mathbb{R}^{n\times k}\). The metric becomes
+For \(S\in\mathbb{R}^{n\times k}\),
 
 \[
 G=I_n+\varepsilon SS^T.
 \]
 
-The Woodbury identity gives the exact inverse
+Woodbury gives
 
 \[
 G^{-1}=I_n-\varepsilon S(I_k+\varepsilon S^TS)^{-1}S^T.
@@ -47,145 +63,210 @@ G^{-1}=I_n-\varepsilon S(I_k+\varepsilon S^TS)^{-1}S^T.
 Sylvester's determinant identity gives
 
 \[
-\det(I_n+\varepsilon SS^T)
-=
-\det(I_k+\varepsilon S^TS).
+\det(I_n+\varepsilon SS^T)=\det(I_k+\varepsilon S^TS).
 \]
 
-This moves the nontrivial inversion from an \(n\times n\) system to a \(k\times k\) system. For \(k\ll n\), this is the central computational advantage of the framework.
+The nontrivial inverse therefore operates on the \(k\times k\) inner system. The dense API representation additionally materializes an \(n\times n\) matrix.
 
-## Phase 3 — Adaptive Regularization
+## 4. Phase 3 — Adaptive Metric Parameter
 
-The effective metric parameter is state-dependent:
+The effective metric parameter is
 
 \[
 \varepsilon(S)=\frac{\varepsilon_0}{1+\alpha\|S\|_F^2}.
 \]
 
-As the state norm grows, the effective perturbation is reduced. The implementation also exposes the configured sensitivity/gradient proxy used by the phase's diagnostic output.
+The state norm controls the effective perturbation scale. The phase exposes the configured parameter and gradient/sensitivity quantity.
 
-## Phase 4 — Curvature-Driven Adaptation
+## 5. Phase 4 — Curvature Evolution
 
-The current phase defines a scalar curvature proxy
+The phase defines
 
 \[
 \mathcal{R}_{proxy}=4\varepsilon^2\|S\|_F^4.
 \]
 
-The explicit adaptation step is
+The discrete parameter evolution is
 
 \[
-\varepsilon_{t+1}
-=
-\max\left(\varepsilon_t-\gamma\,\mathcal{R}_{proxy}\,\Delta t,10^{-6}\right).
+\varepsilon_{t+1}=\max\left(\varepsilon_t-\gamma\mathcal{R}_{proxy}\Delta t,10^{-6}\right).
 \]
 
-This is a discrete numerical adaptation rule. It should not be interpreted as a complete implementation of the tensorial Ricci-flow equation without additional geometric structure.
+The resulting epsilon, curvature quantity, spectral diagnostics, and entropy quantity are recorded at phase milestones.
 
-## Phase 5 — Topological Diagnostics
+## 6. Phase 5 — Topological State Analysis
 
-The state rows are treated as points in a Euclidean embedding. Pairwise distances define threshold graphs over a five-threshold filtration using the 10th, 25th, 50th, 75th, and 90th percentiles.
+Rows of \(S\) form points in a Euclidean embedding. Pairwise distances define threshold graphs at the 10th, 25th, 50th, 75th, and 90th distance percentiles.
 
-The implementation computes a connected-component estimate \(\beta_0\), a graph-cycle estimate
+For each threshold, the engine computes connected components \(\beta_0\) and the graph-cycle quantity
 
 \[
-\beta_1 \approx E-N+C,
+\beta_1=E-N+C.
 \]
 
-and retains a \(\beta_2\) extension hook. The current \(\beta_2\) approximation reports zero rather than claiming a full higher-dimensional persistent-homology calculation.
+The implementation retains a \(\beta_2\) extension point and computes the configured higher-order void quantity through its tetrahedral counting routine. A topology transition is recorded when the sampled Betti tuple sequence changes.
 
-A transition is recorded when the full tuple sequence changes between sampled thresholds.
+## 7. Phase 6 — Quantum Graph Dynamics
 
-## Phase 6 — Quantum-Coherence Layer
-
-The evolving point cloud induces a median-distance threshold graph. A Hamiltonian is constructed as
+The evolving point cloud generates a median-distance threshold graph with adjacency matrix \(A\) and degree vector \(d\). The Hamiltonian is
 
 \[
-H=-J A+\operatorname{diag}(V),
+H=-JA+\operatorname{diag}(V),
 \]
 
-with
+where
 
 \[
 J=2(1+5\mathcal{R}_{proxy}),
-\qquad
+\]
+
+and
+
+\[
 V_i=-10\frac{d_i}{\max_j(d_j+10^{-6})}.
 \]
 
-The normalized complex state is evolved using
+The normalized complex state evolves as
 
 \[
 \psi_{t+1}=e^{-iH\Delta t_q}\psi_t.
 \]
 
-The phase reports inverse participation ratio (IPR)
+The phase records inverse participation ratio
 
 \[
-\mathrm{IPR}=\sum_i |\psi_i|^4
+\mathrm{IPR}=\sum_i|\psi_i|^4,
 \]
 
-and a circular phase-coherence measure based on mean sine and cosine components.
+and circular phase coherence
 
-## Phase 7 — Holographic Projection
+\[
+C_\phi=\sqrt{\left(\frac{1}{n}\sum_i\cos\phi_i\right)^2+\left(\frac{1}{n}\sum_i\sin\phi_i\right)^2}.
+\]
 
-A normalized complex bulk state is converted into a rank-1 bulk projector and expanded to the boundary through a Kronecker-product upscaling. The boundary state is coupled toward that projection with a fixed coupling strength.
+## 8. Phase 7 — Holographic Projection
 
-The phase reports:
+The normalized bulk state \(\psi\) produces the rank-1 projector
 
-- bulk coherence,
-- von Neumann entropy of a normalized boundary Gram matrix,
-- a Fourier-spectrum scaling estimate used as an emergent fractal-dimension proxy.
+\[
+P=|\psi\rangle\langle\psi|.
+\]
 
-These are numerical constructions inspired by holographic language; they are not, by themselves, a physical derivation of AdS/CFT correspondence.
+The boundary representation is generated through Kronecker-product expansion. The boundary state is coupled toward the expanded projector using the configured coupling strength.
 
-## Phase 8 — Retrocausal / Adjoint Optimization
+The phase computes bulk coherence, normalized boundary entropy, and a Fourier-spectrum scaling quantity used by the fractal-dimension diagnostic.
 
-The boundary objective defines an error matrix
+## 9. Phase 8 — Boundary-to-Bulk Optimization
+
+The boundary objective is
 
 \[
 L=B-B_{target}.
 \]
 
-The boundary gradient is mapped back to bulk matrix space through the reverse projection operator. The bulk density matrix is then projected back onto the Hermitian positive-semidefinite, trace-normalized state space.
-
-The phase records before/after boundary loss, bulk entropy, and optimization ratio. The term "retrocausal" describes the direction of objective propagation in the framework; the implementation is a conventional numerical optimization procedure and does not establish physical backward causation.
-
-## Phase 9 — Identity Convergence
-
-The final phase compares a normalized system state with a normalized reference state. Alignment is
+The boundary gradient
 
 \[
-a=\langle s,r\rangle,
+\nabla_B=2L
 \]
 
-and the angular separation is
+is mapped into bulk matrix space through the reverse holographic projection.
+
+The bulk density matrix is updated, symmetrized,
+
+\[
+\rho\leftarrow\frac{\rho+\rho^\dagger}{2},
+\]
+
+spectrally projected onto nonnegative eigenvalues, and trace-normalized:
+
+\[
+\rho\leftarrow\frac{\rho}{\operatorname{Tr}(\rho)}.
+\]
+
+The phase records boundary loss before optimization, boundary loss after optimization, bulk entropy, and optimization ratio.
+
+## 10. Phase 9 — Identity Convergence
+
+The system state \(s\) and reference state \(r\) are normalized vectors. Their alignment is
+
+\[
+a=\langle s,r\rangle.
+\]
+
+The angular separation is
 
 \[
 \omega=\arccos(a).
 \]
 
-The update uses spherical linear interpolation (SLERP):
+SLERP evolves the state according to
 
 \[
 s(t)=
-\frac{\sin((1-t)\omega)}{\sin\omega}s_0
-+
+\frac{\sin((1-t)\omega)}{\sin\omega}s_0+
 \frac{\sin(t\omega)}{\sin\omega}r.
 \]
 
-The implementation additionally reports a probability-space relative-entropy diagnostic and a temporal-dilation proxy \(1-a\).
+The engine additionally computes probability-space relative entropy and the temporal-dilation quantity
 
-## Numerical Verification Principles
+\[
+D_t=1-a.
+\]
 
-1. Compare closed-form identities against dense reference calculations at controlled dimensions.
-2. Use fixed random seeds when reproducibility is required.
-3. Track residuals rather than only boolean pass/fail results.
-4. Separate mathematical identity tests from model-behavior tests.
-5. Treat topology, curvature, holographic, retrocausal, and convergence quantities as the definitions implemented by this repository unless a stronger mathematical derivation is supplied.
-6. Record environment and dependency versions for reproducible research.
+## 11. Verification Architecture
 
-## Complexity
+The verification suite operates at two levels.
 
-For the rank-k metric, the expensive nontrivial linear solve operates in k dimensions. Forming the dense n-by-n inverse representation still requires O(n^2) storage/work because the public API returns that matrix. The Woodbury identity therefore provides its strongest asymptotic advantage when downstream operations can exploit the factorized low-rank representation rather than materializing the full inverse.
+### 11.1 Mathematical identities
 
-This distinction is important: the identity itself reduces the inversion problem from an n-dimensional solve to a k-dimensional solve, while a dense returned matrix can reintroduce O(n^2) materialization costs.
+The tests compare closed-form low-rank identities with dense reference calculations:
+
+- Woodbury inverse identity
+- Sylvester determinant identity
+- Rank-1 inverse residual
+- Rank-1 log-determinant agreement
+
+### 11.2 Phase invariants
+
+The phase suite validates:
+
+- adaptive epsilon positivity;
+- Ricci epsilon floor;
+- topological output structure;
+- quantum-state normalization;
+- holographic dimensional consistency;
+- density-matrix Hermiticity;
+- density-matrix trace normalization;
+- density-matrix positive semidefiniteness;
+- convergence alignment bounds.
+
+## 12. Reproducibility
+
+Stochastic engines accept an explicit `seed` and use NumPy's `default_rng` for isolated initialization.
+
+A reproducible experiment records Python version, NumPy version, SciPy version, operating system, engine parameters, random seed, iteration count, time step, hardware, and numerical backend.
+
+## 13. Complexity
+
+For the rank-k metric, the nontrivial linear solve is performed in the \(k\times k\) Woodbury system. The low-rank formulation is optimized for \(k\ll n\).
+
+The dense `woodbury_inverse()` return value has \(O(n^2)\) storage and matrix-formation cost. A factorized downstream implementation retains the low-rank structure and avoids dense materialization.
+
+The identity provides the fundamental reduction from an \(n\)-dimensional inversion problem to a \(k\)-dimensional solve. API design determines how much of that reduction is retained by downstream computation.
+
+## 14. Numerical Conventions
+
+- Identity matrices use dimension-specific \(I_n\) or \(I_k\).
+- Frobenius norms use \(\|S\|_F\).
+- Eigenvalue diagnostics use the real part and spectral magnitude defined by each engine.
+- Complex quantum states are normalized by Euclidean norm.
+- Density matrices are Hermitianized, spectrally clipped, and trace-normalized after optimization updates.
+- Numerical logarithms use positive-domain stabilization where required by the implementation.
+- Milestone histories provide deterministic checkpoints for seeded runs.
+
+## 15. Research Program
+
+RSHL-KERNEL unifies low-rank linear algebra, adaptive metric dynamics, curvature quantities, topology, quantum graph evolution, holographic projection, boundary-to-bulk optimization, and spherical convergence within one executable architecture.
+
+Each phase has an explicit state representation, transformation rule, diagnostic set, and test surface. The resulting framework provides a common computational substrate for mathematical experimentation across the nine layers.
